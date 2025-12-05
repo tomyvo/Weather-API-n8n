@@ -1,0 +1,157 @@
+{
+  "name": "weather api",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://api.open-meteo.com/v1/forecast?latitude=48.7665&longitude=11.4258&daily=precipitation_sum,precipitation_probability_max&timezone=Europe/Berlin\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5f4fe957-c343-49db-8721-d5212e0b80f5",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de57fe4f-0b4e-4fe8-88ae-b9bfbcc7aa3d",
+              "name": "daily",
+              "value": "={{ $json.daily }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        16
+      ],
+      "id": "9eee90ea-3281-4223-ae42-fb44f39c49a2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function Node Beispiel (JavaScript)\nconst daily = $json[\"daily\"]; // Daten vom HTTP Request Node\nconst todayStr = new Date().toISOString().split('T')[0];\n\nconst idx = daily.time.indexOf(todayStr);\nif(idx === -1) return []; // Kein heutiges Datum gefunden\n\nconst rain_mm = daily.precipitation_sum[idx];\nconst rain_prob = daily.precipitation_probability_max[idx];\n\nlet message = \"\";\n\nif(rain_prob >= 80){\n    // Starker Regen\n    const options = [\n        `Achtung! Starkregen heute (${rain_prob}%, ${rain_mm} mm)! Nimm auf jeden Fall deinen Regenschirm und vielleicht noch eine Regenjacke ☔🌧️`,\n        `Wow, heute wird es richtig nass (${rain_prob}%, ${rain_mm} mm)! Schirm nicht vergessen!`,\n        `Starkregenwarnung: ${rain_prob}% Regenwahrscheinlichkeit, ${rain_mm} mm. Schütze dich vor dem Regen!`\n    ];\n    message = options[Math.floor(Math.random() * options.length)];\n} else if(rain_prob >= 50){\n    // Leichter bis mittlerer Regen\n    const options = [\n        `Es könnte heute regnen (${rain_prob}%, ${rain_mm} mm). Vergiss nicht den Schirm! ☔`,\n        `Regenwahrscheinlichkeit heute: ${rain_prob}% (${rain_mm} mm). Schirm einpacken!`,\n        `Heute ist eine kleine Chance auf Regen (${rain_prob}%, ${rain_mm} mm). Besser vorsorgen!`\n    ];\n    message = options[Math.floor(Math.random() * options.length)];\n} else {\n    // Kein signifikanter Regen\n    return [];\n}\n\n// Nachricht ausgeben\nreturn [{ json: { message } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        16
+      ],
+      "id": "4d923de9-852b-49da-a739-b878dfb41e09",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "8176155502",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        16
+      ],
+      "id": "fbee6651-f47d-4de4-95ff-a0e55c5a1f7a",
+      "name": "Send a text message",
+      "webhookId": "ef5ccc7b-716c-40db-a7ac-11d7d6a2c605",
+      "credentials": {
+        "telegramApi": {
+          "id": "cAeK2KyDJn497qOY",
+          "name": "currentWeatherTomy123"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        16
+      ],
+      "id": "4a2d9919-9079-48e0-b6ff-e87afe40bc92",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6be3bc56-d97b-436c-aa1d-ea715267de97",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7f6140b0c370a3fbf2dfb84728facd0cff7eef80d4c4c944492dca59d046dbd"
+  },
+  "id": "umK5GZ6oveEqexz1",
+  "tags": []
+}
