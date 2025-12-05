@@ -7,14 +7,6 @@ Every morning at 07:30, the workflow fetches rain data from Open-Meteo, analyzes
 
 ---
 
-##🖼️ Workflow Preview
-
-(You can replace these placeholders with real screenshots)
-
-<p align="center"> <img src="https://via.placeholder.com/900x350?text=n8n+Weather+Workflow+Overview" /> </p>
-
----
-
 ## 🚀 Features
 
 ⏰ Scheduled every morning at 07:30
